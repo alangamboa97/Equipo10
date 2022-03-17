@@ -1,3 +1,3 @@
 # Equipo10
  
-Alan Gamboa - ANSI-SPARC y DBSM
+Alan Gamboa - Introducción, ANSI-SPARC, DBSM, Modelos de Arquitectura, Autonomía
