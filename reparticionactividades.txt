@@ -1,0 +1,6 @@
+1.- Analizar el modelo de la base de datos Adventureworkers -Alan
+2.- Segmentar la base de datos por esquemas - Alan
+3.- Configurar dos instancias SQL Server y una instancia MySQL - Alejandro
+4.- Alojar en la instancia MySQL el esquema production de la base de datos Aventureworks - Alejandro
+5.- Alojar en una instancia SQL el esquema Sales de la base de datos - Eduardo 
+6.- Alojar en otra instancia SQL server de los demás esquemas de la base de datos Adventureworks - Eduardo
