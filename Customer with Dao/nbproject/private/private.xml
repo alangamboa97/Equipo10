@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/ICrud4.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/ImplementacionSQLServerOrderHeader.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/test/TestInterfaces.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/Connection/Conexion.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/ICrud.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/IAccessoDatosOrderHeader.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/ImplementacionSqlServerCustomer.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/accesodatos/IAccesoDatosCustomer.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/domain/SalesOrderHeader.java</file>
+            <file>file:/C:/Users/alang/Documents/Customer%20with%20Dao/src/domain/SalesCustomer.java</file>
+        </group>
+    </open-files>
+</project-private>
