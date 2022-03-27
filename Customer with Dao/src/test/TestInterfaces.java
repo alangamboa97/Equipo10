@@ -12,6 +12,16 @@ public class TestInterfaces {
         ICrud datos = new ImplementacionSqlServerCustomer();
         ICrud4 datos2 = new ImplementacionSQLServerOrderHeader();
         
+        SalesOrderHeader salOrd = new SalesOrderHeader();
+        salOrd.setSalesOrderID(1);
+        salOrd.setCustomerID(1);
+        salOrd.setSalesPersonID(1);
+        salOrd.setTerritoryID(1);
+        salOrd.setBillToAddressID(1);
+        salOrd.setShipToAddress(1);
+        salOrd.setShipMethodID(1);
+        salOrd.setCustomerID(1);
+        datos2.insertar(salOrd);
         
         List<SalesOrderHeader> lista=datos2.listar();
         
@@ -37,16 +47,7 @@ public class TestInterfaces {
 //        datos.actualizar(salCust);
 
 //INSERT
-        SalesOrderHeader salOrd = new SalesOrderHeader();
-        salOrd.setSalesOrderID(1);
-        salOrd.setCustomerID(1);
-        salOrd.setSalesPersonID(1);
-        salOrd.setTerritoryID(1);
-        salOrd.setBillToAddressID(1);
-        salOrd.setShipToAddress(1);
-        salOrd.setShipMethodID(1);
-        salOrd.setCustomerID(1);
-        datos2.insertar(salOrd);
+       
     }
     
     public static void imprimir(ICrud datos){
