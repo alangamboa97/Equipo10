@@ -57,9 +57,29 @@ public class ImplementacionSQLServerOrderHeader implements IAccessoDatosOrderHea
     }
 
     @Override
-    public void insertar(SalesOrderHeader objeto) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public void insertar(SalesOrderHeader salOrd) {
+         System.out.println("\nInsertar a SqlServer");
+
+        try {
+            Conexion con = new Conexion();
+            ps = con.Conectar().prepareStatement("{call sp_InsertarSalesOrderHeader(?,?,?,?,?,?,?,?)}");
+            
+            ps.setInt(1, salOrd.getSalesOrderID());
+            ps.setInt(2, salOrd.getCustomerID());
+            ps.setInt(3, salOrd.getSalesPersonID());
+            ps.setInt(4, salOrd.getTerritoryID());
+            ps.setInt(5, salOrd.getBillToAddressID());
+            ps.setInt(6, salOrd.getShipToAddressID());
+            ps.setInt(7, salOrd.getShipMethodID());
+            ps.setInt(8, salOrd.getCreditCardID());
+
+            ps.execute();
+            System.out.println("Inserción Exitosa");
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+    } //To change body of generated methods, choose Tools | Templates.
+    
 
     @Override
     public void actualizar(SalesOrderHeader objeto) {

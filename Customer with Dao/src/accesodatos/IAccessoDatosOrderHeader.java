@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author alang
  */
-public interface IAccessoDatosOrderHeader extends ICrud<SalesOrderHeader> {
+public interface IAccessoDatosOrderHeader extends ICrud4<SalesOrderHeader> {
     
     List<SalesOrderHeader> listar();
     
