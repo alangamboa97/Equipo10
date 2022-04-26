@@ -19,7 +19,7 @@ public class SpecialOfferImp implements IAccesoDatosSpecialOffer{
 
         try {
             Conexion con = new Conexion();
-            ps = con.Conectar().prepareStatement("{call sp_RecuperarCustomer}");
+            ps = con.Conectar().prepareStatement("{call sp_ReadSpecialOffer}");
 
             rs = ps.executeQuery();
             lista = new ArrayList();
@@ -53,7 +53,7 @@ public class SpecialOfferImp implements IAccesoDatosSpecialOffer{
 
         try {
             Conexion con = new Conexion();
-            ps = con.Conectar().prepareStatement("{call sp_ActualizarCustomer(?,?,?,?,?,?,?,?,?,?)}");
+            ps = con.Conectar().prepareStatement("{call sp_updateSpecialOffer(?,?,?,?,?,?,?,?,?,?)}");
 
             ps.setInt(1, objeto.getSpecialOfferID());
             ps.setString(2, objeto.getDescription());
