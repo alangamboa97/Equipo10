@@ -53,7 +53,7 @@ public class SpecialOfferImp implements IAccesoDatosSpecialOffer{
 
         try {
             Conexion con = new Conexion();
-            ps = con.Conectar().prepareStatement("{call sp_updateSpecialOffer(?,?,?,?,?,?,?,?,?,?)}");
+            ps = con.Conectar().prepareStatement("{call sp_UpdateSpecialOffer(?,?,?,?,?,?,?,?,?,?)}");
 
             ps.setInt(1, objeto.getSpecialOfferID());
             ps.setString(2, objeto.getDescription());
