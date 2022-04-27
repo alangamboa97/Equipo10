@@ -1,35 +1,35 @@
 use AdventureWorks2019
-
+go
 
 exec sp_linkedservers
-
-
 
 
 -- TABLA DE INSTANCIA 1 --------------------------------------------------------------------------
 -- CUSTOMER------------------------------------------------------------------------
 -- Recuperar
 select *
-from Sales.Customer
+from SERVIDOR2.SALES.[Sales].[Customer]
 go
 
 create or alter procedure sp_RecuperarCustomer
 as begin 
+	
 	BEGIN TRY
 		BEGIN TRANSACTION
 			select *
-			from Sales.Customer				
+			from SERVIDOR2.SALES.[Sales].[Customer]		
 		COMMIT TRANSACTION
 	END TRY 
 	BEGIN CATCH   
 		ROLLBACK TRANSACTION   
 		RAISERROR ('No se pudo realizar la accion',16,1)  
 	END CATCH
+
 end
 
 -- Actualizacion
 -- Todas las demas columnas no las deja actualizar.
-update Sales.Customer
+update SERVIDOR2.SALES.[Sales].[Customer]
 set PersonID=10, ModifiedDate=GETDATE()
 where CustomerID=2
 go
@@ -37,11 +37,12 @@ go
 create or alter procedure sp_ActualizarCustomer
 	@CustomerID int, @PersonID int
 as begin 
+	
 	BEGIN TRY
 		BEGIN TRANSACTION
 			
 			update
-				Sales.Customer
+				SERVIDOR2.SALES.[Sales].[Customer]
 			set  
 				PersonID=@PersonID, ModifiedDate=GETDATE()
 					where CustomerID=@CustomerID;
@@ -52,37 +53,50 @@ as begin
 		ROLLBACK TRANSACTION   
 		RAISERROR ('No se pudo realizar la accion',16,1)  
 	END CATCH
+
 end
 
 exec sp_ActualizarCustomer 1,15 
 
 -- TABLA DE INSTANCIA 2 --------------------------------------------------------------------------
+use AdventureWorks2019
+go
+
 -- [SalesOrderDetail] -------------------------------------------------------------------
 select * 
 from SERVIDOR2.SALES.[Sales].[SalesOrderDetail]
 
--- Insertar
+-- INSERTAR
 INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, CarrierTrackingNumber, [OrderQty], [ProductID],
 	[SpecialOfferID], [UnitPrice], [UnitPriceDiscount], [ModifiedDate])
 VALUES (121318,'fasdfsadfsaf', 3, 743, 1, 20, 0.5, getdate());
 go
 
--- SalesOrderID es el id de venta (uno por cada grupo de productos vendidos).
--- orderdetailID es autoincrementable
--- carrierTrackin a que se refiere?? Puede ser null
--- orderQty, viene de cuantos productos se piden ([produccion].[Product] ()), para ello se debe checar el stock
--- productID, debe existir.
--- special offer id, representa el tipo de oferta. Todos los productos tienen oferta? la respuesta 
-	--es que no, los que tienen el 1 no tienen descuento.
--- unit price debe traerse de 
--- unit price discoutn se trae de special offer
--- line total es el resultado de qty*unitprice*(1-unitdiscount)
+-- SalesOrderID: es el id de venta (uno por cada grupo de productos vendidos).
+-- orderdetailID: es autoincrementable
+-- carrierTrackin: a que se refiere?? Todo el grupo de una venta tiene el mismo.
+-- orderQty: cuantos productos se piden ([produccion].[Product] ()), para ello se debe checar el stock
+-- productID: debe existir.
+-- specialofferid: representa el tipo de oferta. Todos los productos tienen oferta? la respuesta 
+	--es que no, los que tienen el 1 no tienen descuento. Pero hay unos que no estan en la tabla
+	-- pe product 1, 2, 3, 4 (que significa?).
+-- unitprice: debe traerse de product (campo Listprice)
+-- unitpricediscoutn: se trae de special offer
+-- linetotal: resultado de qty*unitprice*(1-unitdiscount)
+-- rowguid: Se trae de algun lado o solo son caracteres random(?)
+
+-- Otras tablas involucradas:
+	-- SpecialOfferProduct: Tipo de ofertas
+	-- SpecialOffer: Tipo de descuento con base al tipo de oferta.
+	-- Product: Informacion de los productos: costo del producto (StandardCost), saber si 
+		-- existe (mediante el id), saber si hay en existencia/stock (mediante campo 
+		-- SafetyStockLevel).
+
 
 -- Para saber que existe el producto
 select * 
 from [produccion].[Product]
-where ProductID=776
-
+where ProductID=514
 
 IF EXISTS (select * from [produccion].[Product] where ProductID = @ProductID )
     PRINT N' existe el producto que solicita';
@@ -90,10 +104,8 @@ IF EXISTS (select * from [produccion].[Product] where ProductID = @ProductID )
 ELSE 
     PRINT N'No existe el producto que solicita'; 
 
--- Para la cantidad
-select SafetyStockLevel 
-from [produccion].[Product]
 
+-- Actualizar el stock
 create or alter procedure sp_ActualizarProducto
 	@ProductID int, @nuevo_stock int
 as begin 
@@ -126,58 +138,51 @@ where UnitPriceDiscount <> 0.00
 select * 
 from SERVIDOR2.SALES.[Sales].[SpecialOffer]
 
-select *
-from [Sales].[SpecialOfferProduct]
-
-
 select * 
 from [produccion].[Product]
 
 select *
 from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct]
-where ProductID = 680
+where ProductID = 1
 
 select *
-from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct]
-where ProductID = 680
+from SERVIDOR2.SALES.[Sales].[SalesOrderDetail]
+where ProductID = 1
 
-select *
-from [Sales].SalesOrderHeader
-
+select * from openquery(MYSQL,'select * from AdventureWorks2019.product')
 
 
-
-
-
-create or alter procedure sp_InsertarSalesOrderDetail
+-- Validar existencia, cantidad stock y existencia de oferta
+-- falta poner los openquery
+create or alter procedure sp_ValidarInserccionSalesOrderDetail
 	@ProductID int, @solicitud_stock int
 as begin 
 	BEGIN TRY
 		BEGIN TRANSACTION
-
-			IF EXISTS (select * from [produccion].[Product] where ProductID = @ProductID )
+		
+			IF EXISTS (select * from [produccion].[Product] where ProductID = @ProductID)
 			BEGIN
 				Declare @nuevo_stock int
 				set @nuevo_stock = (select [SafetyStockLevel] from [produccion].[Product] where ProductID = @ProductID ) - @solicitud_stock
 
 				IF @nuevo_stock >= 0
 				BEGIN
+					
 					exec sp_ActualizarProducto @ProductID, @nuevo_stock
-					IF EXISTS (select * from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] where ProductID = @ProductID)
-					BEGIN
-						declare @tipo_oferta int
-						set @tipo_oferta = (select * from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] where ProductID = @ProductID)
+					select 1
 
-
-					END
-					ELSE
-						PRINT N'Esta oferta no existe'; 
 				END
 				ELSE
-					PRINT N'No hay en stock el producto que solicita'; 
+				BEGIN
+					PRINT N'No hay la cantidad de stock del producto que solicita';
+					select -1
+				END
 			END
 			ELSE 
-				PRINT N'No existe el producto que solicita'; 	
+			BEGIN
+				PRINT N'No existe el producto que solicita';
+				select 0
+			END
 
 		COMMIT TRANSACTION
 	END TRY 
@@ -188,33 +193,76 @@ as begin
 end
 go
 
-exec sp_InsertarSalesOrderDetail 1,1000
+select *
+from produccion.Product
+where ProductID = 860
+
+exec sp_ValidarInserccionSalesOrderDetail 3,10
 
 
+-- Insertar 
+-- Faltan los openquery
+create or alter procedure sp_InsertarSalesOrderDetail
+	@SalesOrderID int, @ProductID int, @cantidad int
+as begin 
+	BEGIN TRY
+		BEGIN TRANSACTION
+			IF EXISTS (select * from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] where ProductID = @ProductID)
+					BEGIN
+						-- insertarlo pero aplicando su respectivo descuento.
+					Declare @tipo_oferta int
+					set @tipo_oferta = (select SpecialOfferID from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] 
+															   where ProductID = @ProductID)
 
-@SalesOrderID int, @CarrierTrackingNumber nvarchar(25), @OrderQty smallint, @ProductID int, @SpecialOfferID int, 
-	@UnitPrice money, @UnitPriceDiscount money
+					Declare @precio money
+					set @precio = (select ListPrice from produccion.Product
+								   where ProductID = @ProductID)
 
+					Declare @descuento int
+					set @descuento = (select DiscountPct from  SERVIDOR2.SALES.[Sales].[SpecialOffer]
+										where SpecialOfferID = @tipo_oferta )
+										
+					Declare @total int
+					set @total = @cantidad*@precio*(1-@descuento)
+					
+					INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
+						[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
+					VALUES (@SalesOrderID, @cantidad, @ProductID, @tipo_oferta, @precio, @descuento, @total, 'ADDF-45484-SEREF-45684',getdate());	
 
-
-			INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID,  CarrierTrackingNumber, [OrderQty], [ProductID],
-				[SpecialOfferID], [UnitPrice], [UnitPriceDiscount], [ModifiedDate])
-			VALUES (@SalesOrderID, @CarrierTrackingNumber, @OrderQty, @ProductID,
-				@SpecialOfferID, @UnitPrice, @UnitPriceDiscount, getdate())	
-
-			INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID,  CarrierTrackingNumber, [OrderQty], [ProductID],
-				[SpecialOfferID], [UnitPrice], [UnitPriceDiscount], [ModifiedDate])
-			VALUES (@SalesOrderID, @CarrierTrackingNumber, @OrderQty, @ProductID,
-				@SpecialOfferID, @UnitPrice, @UnitPriceDiscount, getdate())	
-
-
-
--- Recuperar
-select * 
-from SERVIDOR2.SALES.[Sales].[SalesOrderDetail]
-where UnitPriceDiscount <> 0.00
+					END
+			ELSE
+					BEGIN
+						PRINT N'Esta producto no tiene algun tipo de oferta'; 
+						-- insertarlo normal pero poniendo specialOfferID igual a 1
+					
+					END
+		COMMIT TRANSACTION
+	END TRY 
+	BEGIN CATCH   
+		ROLLBACK TRANSACTION   
+		RAISERROR ('No se pudo realizar la accion',16,1)  
+	END CATCH
+end
 go
 
+
+select *
+from [produccion].[Product]
+where ProductID = 797
+
+select *
+from SERVIDOR2.SALES.[Sales].[SalesOrderDetail]
+
+exec sp_InsertarSalesOrderDetail 15,797,10
+
+
+
+
+
+
+
+
+-- RECUPERAR
 create or alter procedure sp_RecuperarSalesOrderDetail
 as begin 
 	BEGIN TRY
@@ -230,7 +278,7 @@ as begin
 end
 
 
--- Actualizar
+-- ACTUALIZAR
 UPDATE [Sales].[SalesOrderDetail]
 set
 CarrierTrackingNumber='fasdfsadfsaf', [OrderQty]=3, [UnitPrice]=20, [UnitPriceDiscount]=0.5, 
@@ -266,3 +314,25 @@ exec sp_ActualizarSalesOrderDetail 17,'fasdfsadfsaf', 3, 20, 0.5
 DELETE 
 FROM [Sales].[SalesOrderDetail]
 WHERE  [SalesOrderDetailID]=121330 
+
+
+
+
+create or alter procedure sp_Test
+as begin 
+	
+	BEGIN TRY
+		BEGIN TRANSACTION
+			
+			select * from openquery(MYSQL,'select * from AdventureWorks2019.product')
+
+		COMMIT TRANSACTION
+	END TRY 
+	BEGIN CATCH   
+		ROLLBACK TRANSACTION   
+		RAISERROR ('No se pudo realizar la accion',16,1)  
+	END CATCH
+end
+go
+
+exec sp_Test 
