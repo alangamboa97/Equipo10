@@ -5,6 +5,7 @@ import accesodatos.CustomerImp;
 import accesodatos.ICrud;
 import accesodatos.SalesOrderDetailImp;
 import java.util.List;
+import negocio.LogicaOrderDetail;
 
 /*Clase para unicamente hacer pruebas*/
 
@@ -12,15 +13,15 @@ import java.util.List;
 public class Test {
     public static void main(String[] args) {
         
-        ICrud datos; //Pa todos, pa todo.
-        
-        
-        //CUSTOMER ------------------------------------------------
-        
-        //LISTAR
-        datos = new CustomerImp();
-
-        imprimir(datos);
+//        ICrud datos; //Pa todos, pa todo.
+//        
+//        
+//        //CUSTOMER ------------------------------------------------
+//        
+//        //LISTAR
+//        datos = new CustomerImp();
+//
+//        imprimir(datos);
         
         
         //UPDATE
@@ -46,6 +47,10 @@ public class Test {
 //        datos = new OrderDetailImp();
 //        
 //        imprimir(datos);
+
+        LogicaOrderDetail ordenes = new LogicaOrderDetail();
+        
+        ordenes.procesamientoInsercion();
         
     }
     

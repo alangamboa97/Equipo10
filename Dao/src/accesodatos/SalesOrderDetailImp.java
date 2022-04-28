@@ -103,7 +103,7 @@ public class SalesOrderDetailImp implements ICrud4{
             
             rs = ps.executeQuery();
             
-            rs.next();
+            //rs.next();
             resultado = rs.getInt(1);
                     
         } catch (SQLException ex) {

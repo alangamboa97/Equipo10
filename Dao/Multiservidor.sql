@@ -137,10 +137,11 @@ where ProductID = 1
 
 select * from openquery(MYSQL,'select * from AdventureWorks2019.product')
 
--- Validar existencia, cantidad stock y existencia de oferta
+-- Validar existencia, cantidad stock.
+-- Tambien aqui mismo deberia validarse si tiene o no algun tipo de oferta (?)
 -- falta poner los openquery
 create or alter procedure sp_ValidarInserccionSalesOrderDetail
-	@ProductID int, @solicitud_stock int
+	@ProductID int, @solicitud_stock int, @respuesta int output
 as begin 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -154,7 +155,7 @@ as begin
 				BEGIN
 					
 					exec sp_ActualizarProducto @ProductID, @nuevo_stock
-					select 1
+					select 1 
 
 				END
 				ELSE
@@ -187,96 +188,73 @@ exec sp_ValidarInserccionSalesOrderDetail 3,10
 
 -- Insertar 
 -- Faltan los openquery
--- porque no jala la insercion remota si, si jala fuera de el sp.
+-- porque no jala la insercion remota si, si jala fuera de el sp. Se tuvo que 
+	-- especificar de donde provenia cada tabla (de que db). Esto implico que ya
+	-- ya no permitio el uso de commit-transaction.
 create or alter procedure sp_InsertarSalesOrderDetail
-	--@SalesOrderID int, @ProductID int, @cantidad smallint
+	@SalesOrderID int, @ProductID int, @cantidad smallint
 as begin 
-	BEGIN TRY
-		BEGIN TRANSACTION
-			--IF EXISTS (select * from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] where ProductID = @ProductID)
-				--	BEGIN
+			Declare @tipo_oferta int,
+					@precio money,
+					@descuento smallmoney,
+					@total numeric(38,6)
+
+			set @precio = (select ListPrice from AdventureWorks2019.produccion.Product
+								   where ProductID = @ProductID )
 					
+			IF EXISTS (select * from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] where ProductID = @ProductID)
+					BEGIN
 					-- insertarlo pero aplicando su respectivo descuento.
-					Declare @SalesOrderID int
-					set @SalesOrderID = 134050
-
-					Declare @ProductID int
-					set @ProductID = 797
-
-					Declare @cantidad smallint
-					set @cantidad = 3
-
-					Declare @tipo_oferta int
-					set @tipo_oferta = 1
-					--set @tipo_oferta = ( select top 1 SpecialOfferID from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] 
-						--											  where ProductID = @ProductID)
 					
-					Declare @precio money
-					set @precio = 1120.49
-					--set @precio = (select ListPrice from produccion.Product
-						--		   where ProductID = @ProductID )
-					
-					Declare @descuento smallmoney
-					set @descuento = 0.0
-					-- set @descuento = (select DiscountPct from  SERVIDOR2.SALES.[Sales].[SpecialOffer]
-						--     			where SpecialOfferID = @tipo_oferta )
+					--set @tipo_oferta = 1
+					set @tipo_oferta = ( select top 1 SpecialOfferID from  SERVIDOR2.SALES.[Sales].[SpecialOfferProduct] 
+																	  where ProductID = @ProductID)
+					--set @precio = 1120.49				
+					--set @descuento = 0.0
+					 set @descuento = (select DiscountPct from  SERVIDOR2.SALES.[Sales].[SpecialOffer]
+						     			where SpecialOfferID = @tipo_oferta )
 									
-					Declare @total numeric(20,4)
 					set @total = (@cantidad*@precio*(1-@descuento))
 						
-
-					declare @rowguid VARCHAR(700)
-					set @rowguid = NEWID()
-
-					print @SalesOrderID
-					print @cantidad
-					print @ProductID
-					print @tipo_oferta
-					print @precio
-					print @descuento
-					print @total
-					print @rowguid
-
-					--INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
-						--[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
-					--VALUES (@SalesOrderID, @cantidad, @ProductID, @tipo_oferta, @precio, @descuento, @total, @rowguid, getdate());	
+					--print @SalesOrderID
+					--print @cantidad
+					--print @ProductID
+					--print @tipo_oferta
+					--print @precio
+					--print @descuento
+					--print @total
+					INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
+						[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
+					VALUES (@SalesOrderID, @cantidad, @ProductID, @tipo_oferta, @precio, @descuento, @total, NEWID(), getdate())	
 					
--- INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
-	--				[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
--- VALUES (121320, 3, 797, 1, 45, 0.00, 45, NEWID(), getdate())	
-
-					--END
-			--ELSE
-				--	BEGIN
-					--	PRINT N'Esta producto no tiene algun tipo de oferta'; 
+					END
+			ELSE
+				    BEGIN
+					--PRINT N'Esta producto no tiene algun tipo de oferta'; 
 						-- insertarlo normal pero poniendo specialOfferID igual a 1
+					set @tipo_oferta = 1
+					set @descuento = (select DiscountPct from  SERVIDOR2.SALES.[Sales].[SpecialOffer]
+						     			where SpecialOfferID = @tipo_oferta )			
+					set @total = (@cantidad*@precio*(1-@descuento))
 					
-					--END
-		COMMIT TRANSACTION
-	END TRY 
-	BEGIN CATCH   
-		ROLLBACK TRANSACTION   
-		RAISERROR ('No se pudo realizar la accion',16,1)  
-	END CATCH
+					INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
+						[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
+					VALUES (@SalesOrderID, @cantidad, @ProductID, @tipo_oferta, @precio, @descuento, @total, NEWID(), getdate())
+					END
 end
 go
-
-
-select *
-from [produccion].[Product]
-where ProductID = 797
 
 select *
 from SERVIDOR2.SALES.[Sales].[SalesOrderDetail]
 where SalesOrderDetailID = 121320
 
-exec sp_InsertarSalesOrderDetail 121320, 797, 10
+exec sp_InsertarSalesOrderDetail 121320, 1, 2
 
 
-
-INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
-						[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
-VALUES (121320, 3, 797, 1, 45, 0.00, 45, NEWID(), getdate());	
+-- insercion manual
+--INSERT INTO SERVIDOR2.SALES.[Sales].[SalesOrderDetail] (SalesOrderID, [OrderQty], [ProductID],
+--						[SpecialOfferID], [UnitPrice], UnitPriceDiscount, [LineTotal], rowguid, ModifiedDate)
+--VALUES (121320, 3, 797, 1, 45, 0.00, 45, NEWID(), getdate());	
 
 
 
@@ -336,7 +314,7 @@ WHERE  [SalesOrderDetailID]=121330
 
 
 
-create or alter procedure sp_Test
+create or alter procedure sp_Tests
 as begin 
 	
 	BEGIN TRY
@@ -353,4 +331,4 @@ as begin
 end
 go
 
-exec sp_Test 
+exec sp_Tests 

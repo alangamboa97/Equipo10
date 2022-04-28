@@ -14,16 +14,19 @@ public class LogicaOrderDetail {
         this.datos = new SalesOrderDetailImp();
     }
     
-    public void procesamientoInsercion(){
+    public int procesamientoInsercion(){
         
         Scanner lect = new Scanner(System.in);
         int orderId, id, cantidad, opcion;
         List<OrderDetail> ordenes = new ArrayList();
         
         orderId = (int)(Math.random()*(5000-1)+1);
+        System.out.println("Numero de orden = " + orderId);
         
-        do{
-            System.out.println("Ingresa el producto id: ");
+//        do{
+            opcion = 1;
+                    
+            System.out.println("\nIngresa el producto id: ");
             id = Integer.parseInt(lect.nextLine());
             System.out.println("Ingresa la cantidad de productos que desea: ");
             cantidad = Integer.parseInt(lect.nextLine());
@@ -32,12 +35,12 @@ public class LogicaOrderDetail {
             int respues = this.datos.validar(order);
 
             if( respues == 0){
-                System.out.println("No existe el producto que solicita.");
-                return;
+                System.out.println("No existe el producto que solicita. ");
+                
             }
             else if( respues == -1){
                 System.out.println("No hay la cantidad de stock del producto que solicita.");
-                return; 
+                 
             }
             //else{
 
@@ -45,10 +48,15 @@ public class LogicaOrderDetail {
             System.out.println("¿Desea comprar otro producto?\n1. Si.\n2. No.");
             opcion = Integer.parseInt(lect.nextLine());
             
-        }while(opcion != 2);
-        
-        //Aqui se mandaria a llamar un buen de veces su insercion (??)
-        // o se retornarian datos para la insercion en su respectiva clase/metodo de logica orderheade (?).
-        //this.datos.insertar(order);
+//        }while(opcion == 1);
+//        
+//        //Aqui se mandaria a llamar un buen de veces su insercion.
+//        //Retornar orderId
+//        
+//        ordenes.forEach( elemento ->{
+//            this.datos.insertar(elemento);
+//        });
+//        
+        return orderId;
     }
 }
