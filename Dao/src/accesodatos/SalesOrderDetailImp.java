@@ -11,11 +11,32 @@ public class SalesOrderDetailImp implements ICrud4{
     
     PreparedStatement ps = null;
     ResultSet rs = null;
-    ResultSetMetaData md = null;
     
     @Override
-    public void insertar(Object objeto) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int insertar(Object objeto) {
+        
+        System.out.println("Insertar desde SqlServer");
+        int rows = 0;
+        
+        OrderDetail order = (OrderDetail)objeto;
+        try {
+            Conexion con = new Conexion();
+            ps = con.Conectar().prepareStatement("{call sp_InsertarSalesOrderDetail(?,?,?)}");
+                
+            ps.setInt(1, order.getSalesOrderID());
+            ps.setInt(2, order.getProductID());
+            ps.setInt(3, order.getOrderQty());
+            
+            rs = ps.executeQuery();
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
+        finally{
+            Conexion.close(rs);
+            Conexion.close(ps);
+        }
+        
+        return rows;
     }
 
     @Override
@@ -53,10 +74,12 @@ public class SalesOrderDetailImp implements ICrud4{
 
                 lista.add(orderDet);
             }
-
-            rs.close();
         } catch (SQLException ex) {
             System.out.println(ex);
+        }
+        finally{
+            Conexion.close(rs);
+            Conexion.close(ps);
         }
 
         return lista; 
@@ -65,6 +88,33 @@ public class SalesOrderDetailImp implements ICrud4{
     @Override
     public void actualizar(Object objeto) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+    public int validar(OrderDetail order){
+        
+        int resultado = -2;
+        try {
+            Conexion con = new Conexion();
+            ps = con.Conectar().prepareStatement("{call sp_ValidarInserccionSalesOrderDetail(?,?)}");
+                
+            ps.setInt(1, order.getProductID());
+            ps.setInt(2, order.getOrderQty());
+            
+            rs = ps.executeQuery();
+            
+            rs.next();
+            resultado = rs.getInt(1);
+                    
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
+        finally{
+            Conexion.close(rs);
+            Conexion.close(ps);
+        }
+        
+        return resultado;
     }
     
 }

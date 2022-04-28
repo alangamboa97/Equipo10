@@ -1,9 +1,7 @@
 
 package conexion;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Conexion {
 
@@ -24,10 +22,28 @@ public class Conexion {
         return con;
     }
     
-    public void cerrar() throws SQLException {
-        if(con!=null){
-            if(!con.isClosed())
-                con.close();
+    public static void close(ResultSet rs){
+        try {
+            rs.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.out);
         }
     }
+    
+    public static void close(PreparedStatement stmt){
+        try {
+            stmt.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.out);
+        }
+    }
+    
+    public static void close(Connection conn){
+        try {
+            conn.close();
+        } catch (SQLException ex) {
+           ex.printStackTrace(System.out);
+        }
+    }
+    
 }

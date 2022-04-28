@@ -15,6 +15,15 @@ public class OrderDetail {
     private String rowguid;
     private String modifiedDate;
 
+    public OrderDetail() {
+    }
+
+    public OrderDetail(int salesOrderID, int orderQty, int productID) { //constructor insertor
+        this.salesOrderID = salesOrderID;
+        this.orderQty = orderQty;
+        this.productID = productID;
+    }
+    
     public int getSalesOrderID() {
         return salesOrderID;
     }
