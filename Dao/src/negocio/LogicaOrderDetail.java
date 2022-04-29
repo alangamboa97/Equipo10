@@ -18,38 +18,47 @@ public class LogicaOrderDetail {
         
         Scanner lect = new Scanner(System.in);
         int orderId, id, cantidad, opcion;
+        String opcionS;
         List<OrderDetail> ordenes = new ArrayList();
         
         orderId = (int)(Math.random()*(5000-1)+1);
         System.out.println("Numero de orden = " + orderId);
         
-//        do{
+        do{
             opcion = 1;
                     
-            System.out.println("\nIngresa el producto id: ");
+            System.out.print("\nIngresa el producto id: ");
             id = Integer.parseInt(lect.nextLine());
-            System.out.println("Ingresa la cantidad de productos que desea: ");
+            System.out.print("Ingresa la cantidad de productos que desea: ");
             cantidad = Integer.parseInt(lect.nextLine());
 
             OrderDetail order = new OrderDetail(orderId, cantidad, id);
             int respues = this.datos.validar(order);
 
             if( respues == 0){
-                System.out.println("No existe el producto que solicita. ");
+                System.out.println("No existe el producto que solicita.\n");
                 
             }
             else if( respues == -1){
-                System.out.println("No hay la cantidad de stock del producto que solicita.");
+                System.out.println("No hay la cantidad de stock del producto que solicita.\n");
                  
             }
-            //else{
-
-            ordenes.add(order);
-            System.out.println("¿Desea comprar otro producto?\n1. Si.\n2. No.");
-            opcion = Integer.parseInt(lect.nextLine());
+            else{
+                System.out.println("¡Producto Agregado a su compra correctamente!\n");
+                ordenes.add(order);
+            }
             
-//        }while(opcion == 1);
-//        
+            do{
+                System.out.println("¿Desea comprar otro producto?\n1. Si.\n2. No.");
+                opcionS = lect.nextLine();
+                if( opcionS.isEmpty() || (!opcionS.equals("1") && !opcionS.equals("2")) ){
+                    System.out.println("\nOpcion invalida. Intente otra vez.");
+                } 
+            }while( opcionS.isEmpty() || (!opcionS.equals("1") && !opcionS.equals("2")) );
+            
+            opcion = Integer.parseInt(opcionS);
+        }while(opcion == 1);
+        
 //        //Aqui se mandaria a llamar un buen de veces su insercion.
 //        //Retornar orderId
 //        

@@ -103,7 +103,7 @@ as begin
 	BEGIN TRY
 		BEGIN TRANSACTION
 
-			update [produccion].[Product]
+			update AdventureWorks2019.[produccion].[Product]
 			set [SafetyStockLevel]=@nuevo_stock, ModifiedDate=getdate()
 			where ProductID=@ProductID
 		
@@ -116,7 +116,7 @@ as begin
 end
 go
 
-exec sp_ActualizarProducto 1,500
+exec sp_ActualizarProducto 3,1000
 
 
 -- Para las ofertas
@@ -141,7 +141,7 @@ select * from openquery(MYSQL,'select * from AdventureWorks2019.product')
 -- Tambien aqui mismo deberia validarse si tiene o no algun tipo de oferta (?)
 -- falta poner los openquery
 create or alter procedure sp_ValidarInserccionSalesOrderDetail
-	@ProductID int, @solicitud_stock int, @respuesta int output
+	@ProductID int, @solicitud_stock int
 as begin 
 	BEGIN TRY
 		BEGIN TRANSACTION
@@ -153,8 +153,7 @@ as begin
 
 				IF @nuevo_stock >= 0
 				BEGIN
-					
-					exec sp_ActualizarProducto @ProductID, @nuevo_stock
+					--exec AdventureWorks2019.dbo.sp_ActualizarProducto @ProductID, @nuevo_stock
 					select 1 
 
 				END
@@ -183,7 +182,8 @@ select *
 from produccion.Product
 where ProductID = 860
 
-exec sp_ValidarInserccionSalesOrderDetail 3,10
+exec sp_ValidarInserccionSalesOrderDetail 2,10
+
 
 
 -- Insertar 
